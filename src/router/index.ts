@@ -1,8 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import DashboardView from '@/views/DashboardView.vue'
-import ShowDetailView from '@/views/ShowDetailView.vue'
-import SearchResultsView from '@/views/SearchResultsView.vue'
-import GenreShowsView from '@/views/GenreShowsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -10,23 +6,23 @@ const router = createRouter({
     {
       path: '/',
       name: 'dashboard',
-      component: DashboardView,
+      component: () => import('@/views/DashboardView.vue'),
     },
     {
       path: '/show/:id',
       name: 'show-detail',
-      component: ShowDetailView,
+      component: () => import('@/views/ShowDetailView.vue'),
       props: true,
     },
     {
       path: '/search',
       name: 'search',
-      component: SearchResultsView,
+      component: () => import('@/views/SearchResultsView.vue'),
     },
     {
       path: '/genre/:genreName',
       name: 'genre-shows',
-      component: GenreShowsView,
+      component: () => import('@/views/GenreShowsView.vue'),
       props: true,
     },
   ],

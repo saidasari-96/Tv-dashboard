@@ -6,7 +6,7 @@ A responsive Vue 3 dashboard that browses TV shows from the [TVMaze API](https:/
 
 | Layer | Choice |
 | --- | --- |
-| Framework | Vue 3 (Options API) |
+| Framework | Vue 3 (Options API by default; SearchBar uses Composition API `<script setup>`) |
 | Language | TypeScript |
 | Build tool | Vite |
 | State | Pinia |
@@ -23,13 +23,14 @@ A responsive Vue 3 dashboard that browses TV shows from the [TVMaze API](https:/
 
 ## Why these choices
 
-- **Vue 3 + Options API** — Clear component structure with `data`, `computed`, `methods`, and lifecycle hooks.
+- **Vue 3 + Options API** — Clear component structure with `data`, `computed`, `methods`, and lifecycle hooks for most SFCs.
+- **Composition API (`<script setup>`)** — Used only for `SearchBar` (debounced search navigation).
 - **Vite** — Fast local development and a lightweight build setup.
-- **Pinia** — Central store for loading shows, search, and selected show state.
-- **Vue Router** — Routes for dashboard, show detail, and search.
+- **Pinia** — Single store for shows, search, favorites, and recently visited state.
+- **Vue Router** — Routes for dashboard, show detail, search, and genre View All; view components are lazy-loaded.
 - **Tailwind CSS 4** — Utility classes for a responsive UI.
 - **Axios** — HTTP client for TVMaze API calls.
-- **Vitest** — Unit tests for helpers, store, and components.
+- **Vitest** — Unit tests for helpers, store, service, and components.
 
 ## Architecture
 
@@ -79,6 +80,7 @@ Search uses `GET /search/shows?q=…`. Detail uses a cached show when available,
 - Search by show name (debounced input; in-flight search requests canceled with AbortController)
 - Favorites and recently visited shows persisted in `localStorage` via Pinia
 - Genre View All page with progressive Load More of global Show Index pages
+- Lazy-loaded route views for smaller initial bundles
 - i18n English/Dutch message configuration (`vue-i18n`; default locale `en`)
 - Light/dark theme via Vue provide/inject and CSS semantic tokens
 - Loading and error states with retry

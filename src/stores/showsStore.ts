@@ -12,6 +12,10 @@ export const FAVORITES_STORAGE_KEY = 'tvshelf-favorites'
 export const RECENTLY_VISITED_STORAGE_KEY = 'tvshelf-recently-visited'
 export const MAX_RECENTLY_VISITED = 10
 
+// TVMaze show list starts at page 0
+const INITIAL_SHOWS_PAGE = 0
+const SECOND_SHOWS_PAGE = INITIAL_SHOWS_PAGE + 1
+
 interface ShowsState {
   allShows: TvShow[]
   genreGroups: GenreGroup[]
@@ -102,7 +106,7 @@ export const useShowsStore = defineStore('shows', {
     errorMessageKey: '',
     searchQuery: '',
     hasLoadedShows: false,
-    nextPageToLoad: 1,
+    nextPageToLoad: SECOND_SHOWS_PAGE,
     hasMorePages: true,
     favorites: loadShowsFromStorage(FAVORITES_STORAGE_KEY),
     recentlyVisited: loadShowsFromStorage(RECENTLY_VISITED_STORAGE_KEY),
@@ -119,11 +123,11 @@ export const useShowsStore = defineStore('shows', {
       this.errorMessageKey = ''
 
       try {
-        const firstPage = await fetchShowsByPage(0)
+        const firstPage = await fetchShowsByPage(INITIAL_SHOWS_PAGE)
         this.allShows = [...firstPage]
         this.genreGroups = groupShowsByGenre(this.allShows)
         this.hasLoadedShows = true
-        this.nextPageToLoad = 1
+        this.nextPageToLoad = SECOND_SHOWS_PAGE
         this.hasMorePages = true
       } catch {
         this.errorMessageKey = 'errorLoadShows'

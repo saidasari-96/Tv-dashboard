@@ -1,9 +1,12 @@
 import axios from 'axios'
 import type { SearchResult, TvShow } from '@/types/show'
 
+export const TVMAZE_API_BASE_URL = 'https://api.tvmaze.com'
+export const TVMAZE_REQUEST_TIMEOUT_MS = 15000
+
 const apiClient = axios.create({
-  baseURL: 'https://api.tvmaze.com',
-  timeout: 15000,
+  baseURL: TVMAZE_API_BASE_URL,
+  timeout: TVMAZE_REQUEST_TIMEOUT_MS,
 })
 
 // shows by page

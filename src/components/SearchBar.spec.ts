@@ -6,6 +6,8 @@ import { createI18n } from 'vue-i18n'
 import SearchBar from '@/components/SearchBar.vue'
 import { messages } from '@/i18n'
 
+const SEARCH_DEBOUNCE_MS = 400
+
 function createTestI18n(locale: 'en' | 'nl' = 'en') {
   return createI18n({
     legacy: false,
@@ -153,7 +155,7 @@ describe('SearchBar', () => {
 
     expect(pushSpy).not.toHaveBeenCalled()
 
-    await vi.advanceTimersByTimeAsync(400)
+    await vi.advanceTimersByTimeAsync(SEARCH_DEBOUNCE_MS)
     await flushPromises()
 
     expect(pushSpy).toHaveBeenCalledTimes(1)
@@ -191,7 +193,7 @@ describe('SearchBar', () => {
       query: { q: 'friends' },
     })
 
-    await vi.advanceTimersByTimeAsync(400)
+    await vi.advanceTimersByTimeAsync(SEARCH_DEBOUNCE_MS)
     await flushPromises()
     expect(pushSpy).toHaveBeenCalledTimes(1)
 

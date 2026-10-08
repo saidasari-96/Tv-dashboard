@@ -1,52 +1,56 @@
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script setup lang="ts">
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+
+defineOptions({
+  name: 'SearchBar',
+})
 
 const SEARCH_DEBOUNCE_MS = 400
 
-export default defineComponent({
-  name: 'SearchBar',
-  data() {
-    return {
-      localQuery: '',
-      debounceTimerId: null as ReturnType<typeof setTimeout> | null,
-    }
-  },
-  mounted() {
-    const routeQuery = this.$route.query.q
-    if (typeof routeQuery === 'string') {
-      this.localQuery = routeQuery
-    }
-  },
-  beforeUnmount() {
-    this.clearDebounceTimer()
-  },
-  methods: {
-    clearDebounceTimer() {
-      if (this.debounceTimerId !== null) {
-        clearTimeout(this.debounceTimerId)
-        this.debounceTimerId = null
-      }
-    },
-    scheduleDebouncedSearch() {
-      this.clearDebounceTimer()
-      this.debounceTimerId = setTimeout(() => {
-        this.debounceTimerId = null
-        this.navigateToSearch()
-      }, SEARCH_DEBOUNCE_MS)
-    },
-    submitSearch() {
-      this.clearDebounceTimer()
-      this.navigateToSearch()
-    },
-    navigateToSearch() {
-      const trimmedQuery = this.localQuery.trim()
-      if (!trimmedQuery) {
-        return
-      }
+const router = useRouter()
+const route = useRoute()
+const localQuery = ref('')
+let debounceTimerId: ReturnType<typeof setTimeout> | null = null
 
-      this.$router.push({ name: 'search', query: { q: trimmedQuery } })
-    },
-  },
+function clearDebounceTimer() {
+  if (debounceTimerId !== null) {
+    clearTimeout(debounceTimerId)
+    debounceTimerId = null
+  }
+}
+
+function navigateToSearch() {
+  const trimmedQuery = localQuery.value.trim()
+  if (!trimmedQuery) {
+    return
+  }
+
+  router.push({ name: 'search', query: { q: trimmedQuery } })
+}
+
+function scheduleDebouncedSearch() {
+  clearDebounceTimer()
+  debounceTimerId = setTimeout(() => {
+    debounceTimerId = null
+    navigateToSearch()
+  }, SEARCH_DEBOUNCE_MS)
+}
+
+function submitSearch() {
+  clearDebounceTimer()
+  navigateToSearch()
+}
+
+onMounted(() => {
+  const routeQuery = route.query.q
+  if (typeof routeQuery === 'string') {
+    localQuery.value = routeQuery
+  }
+})
+
+onBeforeUnmount(() => {
+  clearDebounceTimer()
 })
 </script>
 
