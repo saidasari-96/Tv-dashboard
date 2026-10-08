@@ -1,0 +1,72 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Source Serif 4', ui-serif, Georgia, serif;
+  --color-ink: #0c1a1a;
+  --color-ink-muted: #3d5252;
+  --color-surface: #f4faf9;
+  --color-surface-elevated: #ffffff;
+  --color-brand: #0f766e;
+  --color-brand-dark: #0a524c;
+  --color-brand-soft: #ccfbf1;
+  --color-accent: #e85d4c;
+  --color-accent-soft: #fde8e5;
+  --color-border: #d0e4e1;
+  --color-star: #ffc107;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    background:
+      radial-gradient(ellipse 80% 50% at 10% -10%, #99f6e4 0%, transparent 55%),
+      radial-gradient(ellipse 60% 40% at 100% 0%, #fecaca 0%, transparent 45%),
+      linear-gradient(180deg, #f0fdfa 0%, #f8fafc 40%, #f1f5f9 100%);
+    background-attachment: fixed;
+  }
+
+  #app {
+    min-height: 100vh;
+  }
+
+  html.dark {
+    --color-ink: #e7f2f1;
+    --color-ink-muted: #9db5b3;
+    --color-surface: #0c1515;
+    --color-surface-elevated: #152222;
+    --color-brand: #2dd4bf;
+    --color-brand-dark: #5eead4;
+    --color-brand-soft: #134e4a;
+    --color-accent: #fb7185;
+    --color-accent-soft: #4c0519;
+    --color-border: #2a3d3c;
+  }
+
+  html.dark body {
+    color: var(--color-ink);
+    background:
+      radial-gradient(ellipse 80% 50% at 10% -10%, #134e4a 0%, transparent 55%),
+      radial-gradient(ellipse 60% 40% at 100% 0%, #4c0519 0%, transparent 45%),
+      linear-gradient(180deg, #0a1212 0%, #0f1a1a 40%, #111827 100%);
+    background-attachment: fixed;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
