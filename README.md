@@ -146,50 +146,38 @@ Continuous integration is defined in [`.github/workflows/main.yml`](.github/work
 
 ### When it runs
 
-- **Push** to `main` or `develop`
-- **Pull request** targeting `main` or `develop`
+- **Push** to `master`, `main`, or `develop`
+- **Pull request** targeting `master`, `main`, or `develop`
 
 ### Pipeline stages
 
-Jobs run sequentially on `ubuntu-latest` with Node.js **18** and `npm ci`:
+Jobs run on `ubuntu-latest` with Node.js **20** (matches `package.json` engines) and `npm ci`:
 
-| Order | Job | What it does |
-| --- | --- | --- |
-| 1 | **Lint Errors** | `npm run lint` |
-| 2 | **Unit Tests** | Depends on lint → `npm run test -- --runInBand` |
-| 3 | **Build** | Depends on unit tests → `npm run build` |
-| 4 | **Generate Package** | Depends on build → `npm run package`, then uploads `dist/`, `build/`, and `package/` as the `packaged-build` artifact |
+| Order | Job | Depends on | Command / output |
+| --- | --- | --- | --- |
+| 1 | **Unit Tests** | — | `npm run test:run` |
+| 2 | **Build** | Unit Tests | `npm run build`, then uploads `dist/` as artifact `packaged-build` |
 
 ```
-push / pull_request (main, develop)
+push / pull_request (master, main, develop)
         │
         ▼
-   Lint Errors
+   Unit Tests   (npm run test:run)
         │
         ▼
-   Unit Tests
-        │
-        ▼
-      Build
-        │
-        ▼
- Generate Package → upload artifact
+      Build     (npm run build → upload dist/)
 ```
 
 ### Local equivalents
 
-Before opening a PR, run the same checks locally where available:
-
 ```bash
 npm ci
-npm run lint          # if lint script is configured
-npm run test:run      # or the CI test command once aligned
+npm run test:run
 npm run build
-npm run package       # if package script is configured
 ```
 
 ## Notes
 
 - Uses the public TVMaze API over HTTPS; no API key required.
 - Project is set up manually with Vite + Vue (minimal scaffolding).
-- CI workflow lives under `.github/workflows/` and gates changes on `main` / `develop`.
+- CI workflow lives under `.github/workflows/` and gates changes on `master` / `main` / `develop`.
