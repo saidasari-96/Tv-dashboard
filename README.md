@@ -140,7 +140,44 @@ Open `coverage/index.html` in a browser to view the detailed report.
 | `npm run test:run` | Run Vitest once |
 | `npm run test:coverage` | Run Vitest once with V8 coverage |
 
+## CI / GitHub Actions
+
+Continuous integration is defined in [`.github/workflows/main.yml`](.github/workflows/main.yml) (`CI Pipeline`).
+
+### When it runs
+
+- **Push** to `master`, `main`, or `develop`
+- **Pull request** targeting `master`, `main`, or `develop`
+
+### Pipeline stages
+
+Jobs run on `ubuntu-latest` with Node.js **20** (matches `package.json` engines) and `npm ci`:
+
+| Order | Job | Depends on | Command / output |
+| --- | --- | --- | --- |
+| 1 | **Unit Tests** | — | `npm run test:run` |
+| 2 | **Build** | Unit Tests | `npm run build`, then uploads `dist/` as artifact `packaged-build` |
+
+```
+push / pull_request (master, main, develop)
+        │
+        ▼
+   Unit Tests   (npm run test:run)
+        │
+        ▼
+      Build     (npm run build → upload dist/)
+```
+
+### Local equivalents
+
+```bash
+npm ci
+npm run test:run
+npm run build
+```
+
 ## Notes
 
 - Uses the public TVMaze API over HTTPS; no API key required.
 - Project is set up manually with Vite + Vue (minimal scaffolding).
+- CI workflow lives under `.github/workflows/` and gates changes on `master` / `main` / `develop`.
