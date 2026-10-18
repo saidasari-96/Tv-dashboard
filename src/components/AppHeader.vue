@@ -1,6 +1,7 @@
 <script lang="ts">
 import { computed, defineComponent, type ComputedRef } from 'vue'
 import SearchBar from '@/components/SearchBar.vue'
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 import { useShowsStore } from '@/stores/showsStore'
 
 type ThemeMode = 'light' | 'dark'
@@ -21,6 +22,7 @@ export default defineComponent({
   name: 'AppHeader',
   components: {
     SearchBar,
+    LanguageSwitcher,
   },
   inject: {
     themeApi: {
@@ -73,6 +75,7 @@ export default defineComponent({
 
       <div class="flex w-full sm:max-w-md items-center gap-2">
         <SearchBar class="min-w-0 flex-1" />
+        <LanguageSwitcher />
         <button
           type="button"
           class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-surface-elevated text-ink shadow-sm transition hover:border-brand hover:text-brand focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-brand"

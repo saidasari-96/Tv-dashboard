@@ -79,6 +79,15 @@ export function sortShowsByRatingDescending(shows: TvShow[]): TvShow[] {
   return sortedShows
 }
 
+// top N shows by rating
+export function getTopRatedShows(shows: TvShow[], limit: number): TvShow[] {
+  if (limit <= 0) {
+    return []
+  }
+
+  return sortShowsByRatingDescending(shows).slice(0, limit)
+}
+
 // filter and sort genre
 export function filterShowsByGenre(shows: TvShow[], genreName: string): TvShow[] {
   const matchingShows = shows.filter((show) => getShowGenreNames(show).includes(genreName))

@@ -125,4 +125,11 @@ describe('AppHeader', () => {
 
     expect(wrapper.find('button[aria-label="Switch to light theme"]').exists()).toBe(true)
   })
+
+  it('renders the language switcher', async () => {
+    const wrapper = await mountHeader()
+
+    expect(wrapper.find('#language-switcher').exists()).toBe(true)
+  })
 })
+

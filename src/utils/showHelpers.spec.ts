@@ -3,6 +3,7 @@ import {
   filterShowsByGenre,
   formatRating,
   getShowRating,
+  getTopRatedShows,
   groupShowsByGenre,
   sortShowsByRatingDescending,
   stripHtmlTags,
@@ -56,6 +57,27 @@ describe('showHelpers', () => {
       expect(sortedShows[0]?.name).toBe('High')
       expect(sortedShows[1]?.name).toBe('Mid')
       expect(sortedShows[2]?.name).toBe('Low')
+    })
+  })
+
+  describe('getTopRatedShows', () => {
+    it('returns the highest-rated shows up to the limit', () => {
+      const shows = [
+        createFakeShow({ id: 1, name: 'Low', rating: { average: 5.0 } }),
+        createFakeShow({ id: 2, name: 'High', rating: { average: 9.0 } }),
+        createFakeShow({ id: 3, name: 'Mid', rating: { average: 7.0 } }),
+      ]
+
+      const topRated = getTopRatedShows(shows, 2)
+
+      expect(topRated).toHaveLength(2)
+      expect(topRated[0]?.name).toBe('High')
+      expect(topRated[1]?.name).toBe('Mid')
+    })
+
+    it('returns an empty list when the limit is not positive', () => {
+      const shows = [createFakeShow({ id: 1, rating: { average: 9.0 } })]
+      expect(getTopRatedShows(shows, 0)).toEqual([])
     })
   })
 
