@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
-import type { GenreGroup, SearchResult, TvShow } from '@/types/show'
+import type { Episode, GenreGroup, SearchResult, TvShow } from '@/types/show'
 import {
+  fetchEpisodesByShowId,
   fetchShowById,
   fetchShowsByPage,
   searchShowsByName,
@@ -20,11 +21,14 @@ interface ShowsState {
   allShows: TvShow[]
   genreGroups: GenreGroup[]
   selectedShow: TvShow | null
+  selectedShowEpisodes: Episode[]
   searchResults: SearchResult[]
   isLoading: boolean
   isSearching: boolean
   isLoadingMore: boolean
+  isLoadingEpisodes: boolean
   errorMessageKey: string
+  episodesErrorKey: string
   searchQuery: string
   hasLoadedShows: boolean
   nextPageToLoad: number
@@ -99,11 +103,14 @@ export const useShowsStore = defineStore('shows', {
     allShows: [],
     genreGroups: [],
     selectedShow: null,
+    selectedShowEpisodes: [],
     searchResults: [],
     isLoading: false,
     isSearching: false,
     isLoadingMore: false,
+    isLoadingEpisodes: false,
     errorMessageKey: '',
+    episodesErrorKey: '',
     searchQuery: '',
     hasLoadedShows: false,
     nextPageToLoad: SECOND_SHOWS_PAGE,
@@ -178,6 +185,8 @@ export const useShowsStore = defineStore('shows', {
       this.isLoading = true
       this.errorMessageKey = ''
       this.selectedShow = null
+      this.selectedShowEpisodes = []
+      this.episodesErrorKey = ''
 
       try {
         const showFromList = this.allShows.find((show) => show.id === showId)
@@ -194,6 +203,25 @@ export const useShowsStore = defineStore('shows', {
         this.errorMessageKey = 'errorLoadShowDetails'
       } finally {
         this.isLoading = false
+      }
+
+      if (this.selectedShow) {
+        await this.loadShowEpisodes(showId)
+      }
+    },
+
+    // episodes for the open show
+    async loadShowEpisodes(showId: number) {
+      this.isLoadingEpisodes = true
+      this.episodesErrorKey = ''
+      this.selectedShowEpisodes = []
+
+      try {
+        this.selectedShowEpisodes = await fetchEpisodesByShowId(showId)
+      } catch {
+        this.episodesErrorKey = 'errorLoadEpisodes'
+      } finally {
+        this.isLoadingEpisodes = false
       }
     },
 

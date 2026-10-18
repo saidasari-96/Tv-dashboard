@@ -2,6 +2,7 @@
 import { defineComponent } from 'vue'
 import { mapState } from 'pinia'
 import { useShowsStore } from '@/stores/showsStore'
+import type { Episode } from '@/types/show'
 import { formatRating, stripHtmlTags } from '@/utils/showHelpers'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import ErrorMessage from '@/components/ErrorMessage.vue'
@@ -19,7 +20,15 @@ export default defineComponent({
     },
   },
   computed: {
-    ...mapState(useShowsStore, ['selectedShow', 'isLoading', 'errorMessageKey', 'favorites']),
+    ...mapState(useShowsStore, [
+      'selectedShow',
+      'selectedShowEpisodes',
+      'isLoading',
+      'isLoadingEpisodes',
+      'errorMessageKey',
+      'episodesErrorKey',
+      'favorites',
+    ]),
     showId(): number {
       return Number(this.id)
     },
@@ -84,6 +93,12 @@ export default defineComponent({
       const showsStore = useShowsStore()
       showsStore.loadShowDetails(this.showId)
     },
+    reloadEpisodes() {
+      if (Number.isNaN(this.showId)) {
+        return
+      }
+      useShowsStore().loadShowEpisodes(this.showId)
+    },
     onToggleFavorite() {
       if (!this.selectedShow) {
         return
@@ -91,13 +106,20 @@ export default defineComponent({
       const showsStore = useShowsStore()
       showsStore.toggleFavorite(this.selectedShow)
     },
+    formatEpisodeCode(episode: Episode): string {
+      const episodeNumber = episode.number ?? 0
+      return `S${String(episode.season).padStart(2, '0')}E${String(episodeNumber).padStart(2, '0')}`
+    },
+    formatEpisodeSummary(episode: Episode): string {
+      return stripHtmlTags(episode.summary)
+    },
   },
 })
 </script>
 
 <template>
   <div>
-    <LoadingSpinner v-if="isLoading" message="Loading show details..." />
+    <LoadingSpinner v-if="isLoading" :message="$t('loadingShows')" />
 
     <ErrorMessage
       v-else-if="errorMessageKey === 'errorLoadShowDetails'"
@@ -228,6 +250,63 @@ export default defineComponent({
           </div>
         </div>
       </div>
+
+      <section class="flex flex-col gap-4" aria-labelledby="episodes-heading">
+        <h2
+          id="episodes-heading"
+          class="text-sm font-semibold uppercase tracking-wider text-brand"
+        >
+          {{ $t('episodes') }}
+        </h2>
+
+        <LoadingSpinner v-if="isLoadingEpisodes" :message="$t('loadingEpisodes')" />
+
+        <ErrorMessage
+          v-else-if="episodesErrorKey === 'errorLoadEpisodes'"
+          :message="$t(episodesErrorKey)"
+          show-retry
+          @retry="reloadEpisodes"
+        />
+
+        <p
+          v-else-if="selectedShowEpisodes.length === 0"
+          class="rounded-2xl border border-dashed border-border bg-surface-elevated/60 px-4 py-8 text-center text-ink-muted"
+        >
+          {{ $t('noEpisodes') }}
+        </p>
+
+        <ul
+          v-else
+          class="max-h-96 overflow-y-auto divide-y divide-border/70 rounded-2xl border border-border bg-surface-elevated/80"
+        >
+          <li
+            v-for="episode in selectedShowEpisodes"
+            :key="episode.id"
+            class="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4"
+          >
+            <div class="min-w-0 flex flex-col gap-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="rounded-md bg-brand-soft px-2 py-0.5 text-xs font-semibold text-brand-dark">
+                  {{ formatEpisodeCode(episode) }}
+                </span>
+                <h3 class="font-medium text-ink">
+                  {{ episode.name || 'Untitled episode' }}
+                </h3>
+              </div>
+              <p
+                v-if="episode.summary"
+                class="text-sm text-ink-muted line-clamp-2"
+              >
+                {{ formatEpisodeSummary(episode) }}
+              </p>
+            </div>
+            <div class="shrink-0 text-xs text-ink-muted sm:text-right">
+              <p v-if="episode.airdate">{{ episode.airdate }}</p>
+              <p v-if="episode.runtime">{{ episode.runtime }} min</p>
+            </div>
+          </li>
+        </ul>
+      </section>
     </article>
   </div>
 </template>

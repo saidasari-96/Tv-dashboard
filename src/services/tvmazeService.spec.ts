@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { SearchResult, TvShow } from '@/types/show'
+import type { Episode, SearchResult, TvShow } from '@/types/show'
 
 const { mockGet, mockCreate } = vi.hoisted(() => {
   const mockGet = vi.fn()
@@ -18,6 +18,7 @@ vi.mock('axios', () => ({
 import {
   TVMAZE_API_BASE_URL,
   TVMAZE_REQUEST_TIMEOUT_MS,
+  fetchEpisodesByShowId,
   fetchShowById,
   fetchShowsByPage,
   searchShowsByName,
@@ -104,6 +105,27 @@ describe('tvmazeService', () => {
       signal: undefined,
     })
     expect(result).toEqual([])
+  })
+
+  it('fetchEpisodesByShowId requests /shows/:id/episodes and returns data', async () => {
+    const episodes: Episode[] = [
+      {
+        id: 100,
+        name: 'Pilot',
+        season: 1,
+        number: 1,
+        airdate: '2020-01-01',
+        runtime: 60,
+        summary: '<p>First episode</p>',
+        image: null,
+      },
+    ]
+    mockGet.mockResolvedValue({ data: episodes })
+
+    const result = await fetchEpisodesByShowId(42)
+
+    expect(mockGet).toHaveBeenCalledWith('/shows/42/episodes')
+    expect(result).toEqual(episodes)
   })
 
   it('propagates API failures from fetchShowsByPage', async () => {

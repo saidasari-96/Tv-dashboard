@@ -42,3 +42,14 @@ export interface GenreGroup {
   genreName: string
   shows: TvShow[]
 }
+
+export interface Episode {
+  id: number
+  name: string
+  season: number
+  number: number | null
+  airdate: string | null
+  runtime: number | null
+  summary: string | null
+  image: ShowImage | null
+}

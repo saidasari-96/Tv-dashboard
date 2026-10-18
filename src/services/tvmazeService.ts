@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { SearchResult, TvShow } from '@/types/show'
+import type { Episode, SearchResult, TvShow } from '@/types/show'
 
 export const TVMAZE_API_BASE_URL = 'https://api.tvmaze.com'
 export const TVMAZE_REQUEST_TIMEOUT_MS = 15000
@@ -32,5 +32,11 @@ export async function searchShowsByName(
     params: { q: query },
     signal,
   })
+  return response.data
+}
+
+// episodes for a show
+export async function fetchEpisodesByShowId(showId: number): Promise<Episode[]> {
+  const response = await apiClient.get<Episode[]>(`/shows/${showId}/episodes`)
   return response.data
 }

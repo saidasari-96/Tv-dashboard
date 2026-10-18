@@ -7,7 +7,7 @@ import {
   RECENTLY_VISITED_STORAGE_KEY,
   MAX_RECENTLY_VISITED,
 } from '@/stores/showsStore'
-import type { TvShow } from '@/types/show'
+import type { Episode, TvShow } from '@/types/show'
 import * as tvmazeService from '@/services/tvmazeService'
 
 function createFakeShow(overrides: Partial<TvShow>): TvShow {
@@ -26,6 +26,20 @@ function createFakeShow(overrides: Partial<TvShow>): TvShow {
     network: null,
     webChannel: null,
     summary: '<p>A great show</p>',
+    image: null,
+    ...overrides,
+  }
+}
+
+function createFakeEpisode(overrides: Partial<Episode> = {}): Episode {
+  return {
+    id: 100,
+    name: 'Pilot',
+    season: 1,
+    number: 1,
+    airdate: '2020-01-01',
+    runtime: 60,
+    summary: '<p>First episode</p>',
     image: null,
     ...overrides,
   }
@@ -72,18 +86,23 @@ describe('useShowsStore', () => {
 
   it('loads show details from the API when the show is not cached', async () => {
     const detailShow = createFakeShow({ id: 99, name: 'Detail Show' })
+    const episodes = [createFakeEpisode({ id: 201, name: 'Episode One' })]
     vi.spyOn(tvmazeService, 'fetchShowById').mockResolvedValue(detailShow)
+    vi.spyOn(tvmazeService, 'fetchEpisodesByShowId').mockResolvedValue(episodes)
 
     const showsStore = useShowsStore()
     await showsStore.loadShowDetails(99)
 
     expect(showsStore.selectedShow?.name).toBe('Detail Show')
     expect(tvmazeService.fetchShowById).toHaveBeenCalledWith(99)
+    expect(tvmazeService.fetchEpisodesByShowId).toHaveBeenCalledWith(99)
+    expect(showsStore.selectedShowEpisodes).toEqual(episodes)
   })
 
   it('uses a cached show for details when available', async () => {
     const cachedShow = createFakeShow({ id: 5, name: 'Cached Show' })
     const fetchSpy = vi.spyOn(tvmazeService, 'fetchShowById')
+    vi.spyOn(tvmazeService, 'fetchEpisodesByShowId').mockResolvedValue([])
 
     const showsStore = useShowsStore()
     showsStore.allShows = [cachedShow]
@@ -91,6 +110,45 @@ describe('useShowsStore', () => {
 
     expect(showsStore.selectedShow?.name).toBe('Cached Show')
     expect(fetchSpy).not.toHaveBeenCalled()
+    expect(tvmazeService.fetchEpisodesByShowId).toHaveBeenCalledWith(5)
+  })
+
+  it('loads episodes for a show', async () => {
+    const episodes = [
+      createFakeEpisode({ id: 1, name: 'Pilot', season: 1, number: 1 }),
+      createFakeEpisode({ id: 2, name: 'Second', season: 1, number: 2 }),
+    ]
+    vi.spyOn(tvmazeService, 'fetchEpisodesByShowId').mockResolvedValue(episodes)
+
+    const showsStore = useShowsStore()
+    await showsStore.loadShowEpisodes(10)
+
+    expect(tvmazeService.fetchEpisodesByShowId).toHaveBeenCalledWith(10)
+    expect(showsStore.selectedShowEpisodes).toEqual(episodes)
+    expect(showsStore.isLoadingEpisodes).toBe(false)
+    expect(showsStore.episodesErrorKey).toBe('')
+  })
+
+  it('sets an error when loading episodes fails', async () => {
+    vi.spyOn(tvmazeService, 'fetchEpisodesByShowId').mockRejectedValue(new Error('Network error'))
+
+    const showsStore = useShowsStore()
+    await showsStore.loadShowEpisodes(10)
+
+    expect(showsStore.episodesErrorKey).toBe('errorLoadEpisodes')
+    expect(showsStore.selectedShowEpisodes).toEqual([])
+    expect(showsStore.isLoadingEpisodes).toBe(false)
+  })
+
+  it('does not load episodes when show details fail', async () => {
+    vi.spyOn(tvmazeService, 'fetchShowById').mockRejectedValue(new Error('Network error'))
+    const episodesSpy = vi.spyOn(tvmazeService, 'fetchEpisodesByShowId')
+
+    const showsStore = useShowsStore()
+    await showsStore.loadShowDetails(71)
+
+    expect(episodesSpy).not.toHaveBeenCalled()
+    expect(showsStore.selectedShowEpisodes).toEqual([])
   })
 
   it('stores search results for a query', async () => {
@@ -306,6 +364,7 @@ describe('useShowsStore', () => {
   it('records a show as recently visited when detail loading succeeds', async () => {
     const detailShow = createFakeShow({ id: 70, name: 'Detail Visit' })
     vi.spyOn(tvmazeService, 'fetchShowById').mockResolvedValue(detailShow)
+    vi.spyOn(tvmazeService, 'fetchEpisodesByShowId').mockResolvedValue([])
 
     const showsStore = useShowsStore()
     await showsStore.loadShowDetails(70)
